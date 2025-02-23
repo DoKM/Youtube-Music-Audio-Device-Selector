@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        YouTube Music Audio Device Selector - DoKM
+// @name        YTMusic Audio Device Selector
 // @namespace   Violentmonkey Scripts
 // @match       https://music.youtube.com/*
 // @grant       none
