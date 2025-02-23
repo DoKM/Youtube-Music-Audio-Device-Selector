@@ -8,6 +8,7 @@
 // @description 2/23/2025, 11:35:22 AM
 // @run-at document-end
 // @homepageURL https://github.com/DoKM/Youtube-Music-Audio-Device-Selector
+// @license MIT
 // ==/UserScript==
 
 (async function () {
