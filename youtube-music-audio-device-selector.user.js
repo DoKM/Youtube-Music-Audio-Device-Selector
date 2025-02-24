@@ -8,7 +8,6 @@
 // @description 2/23/2025, 11:35:22 AM
 // @run-at document-end
 // @homepageURL https://github.com/DoKM/Youtube-Music-Audio-Device-Selector
-// @updateURL https://openuserjs.org/meta/DoKM/YouTube_Music_Audio_Device_Selector_-_DoKM.meta.js
 // @license MIT
 // ==/UserScript==
 
