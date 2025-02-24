@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://music.youtube.com/*
 // @grant       none
-// @version     1.0
+// @version     1.1
 // @author      DoKM (https://github.com/DoKM)
 // @description 2/23/2025, 11:35:22 AM
 // @run-at document-end
@@ -40,7 +40,7 @@
                     if (device.kind === "audiooutput") {
                         if (device.deviceId === "default") {
                             defaultDevice = device;
-                        } else if (device.deviceId !== "communications") {
+                        } else if (device.deviceId !== "communications" && device.deviceId!= undefined) {
                             outputDevices.push(device);
                         }
                     }
@@ -75,7 +75,7 @@
                 }
                 if (device.deviceId === speakerDeviceID) {
                     defaultSpeaker = device;
-                    if (audioDeviceID) {
+                    if (!audioDeviceID) {
                         musicPlayer.setSinkId(device.deviceId);
                     }
                 }
@@ -84,6 +84,10 @@
         if (!currentDevice) {
             currentDevice = defaultAudioDevice;
         }
+
+      if(!speakerDeviceID){
+        defaultSpeaker = currentDevice;
+      }
 
     }
     createMenu()
