@@ -2,8 +2,10 @@
 // @name        YTMusic Audio Device Selector
 // @namespace   Violentmonkey Scripts
 // @match       https://music.youtube.com/*
+// @match       https://www.youtube.com/*
+// @match       https://m.youtube.com/*
 // @grant       none
-// @version     1.1
+// @version     1.2
 // @author      DoKM (https://github.com/DoKM)
 // @description 2/23/2025, 11:35:22 AM
 // @run-at document-end
@@ -17,6 +19,8 @@
     let defaultSpeaker;
     let currentDevice;
     let dropdown;
+
+    const menuID = window.location.hostname === "music.youtube.com" ? "right-content" : "end";
 
     const starFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>`;
     const speakerFilled = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M533.6 32.5C598.5 85.2 640 165.8 640 256s-41.5 170.7-106.4 223.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C557.5 398.2 592 331.2 592 256s-34.5-142.2-88.7-186.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM473.1 107c43.2 35.2 70.9 88.9 70.9 149s-27.7 113.8-70.9 149c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C475.3 341.3 496 301.1 496 256s-20.7-85.3-53.2-111.8c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zm-60.5 74.5C434.1 199.1 448 225.9 448 256s-13.9 56.9-35.4 74.5c-10.3 8.4-25.4 6.8-33.8-3.5s-6.8-25.4 3.5-33.8C393.1 284.4 400 271 400 256s-6.9-28.4-17.7-37.3c-10.3-8.4-11.8-23.5-3.5-33.8s23.5-11.8 33.8-3.5zM301.1 34.8C312.6 40 320 51.4 320 64l0 384c0 12.6-7.4 24-18.9 29.2s-25 3.1-34.4-5.3L131.8 352 64 352c-35.3 0-64-28.7-64-64l0-64c0-35.3 28.7-64 64-64l67.8 0L266.7 40.1c9.4-8.4 22.9-10.4 34.4-5.3z"/></svg>`;
@@ -32,6 +36,20 @@
 
             await navigator.mediaDevices.getUserMedia(constrains)
 
+            await updateDevices();
+            navigator.mediaDevices.addEventListener("devicechange", async () => {
+                await updateDevices();
+            });
+            resolve();
+        })
+    }
+
+
+    await init();
+
+    async function updateDevices() {
+        return new Promise(async (resolve, reject) => {
+            let tempDevices = await navigator.mediaDevices.enumerateDevices();
             let getDevices = function (deviceList) {
                 let outputDevices = [];  // Fixed typo
                 let defaultDevice = undefined;
@@ -40,7 +58,7 @@
                     if (device.kind === "audiooutput") {
                         if (device.deviceId === "default") {
                             defaultDevice = device;
-                        } else if (device.deviceId !== "communications" && device.deviceId!= undefined) {
+                        } else if (device.deviceId !== "communications" && device.deviceId != undefined) {
                             outputDevices.push(device);
                         }
                     }
@@ -51,18 +69,14 @@
                     outputDevices: outputDevices // Fixed typo
                 };
             };
-
-            let tempDevices = await navigator.mediaDevices.enumerateDevices();
             let { defaultDevice, outputDevices } = getDevices(tempDevices);
             audioDevices = outputDevices;
             defaultAudioDevice = defaultDevice;
             console.log(outputDevices);
             resolve();
-        })
+        });
     }
 
-
-    await init();
     const musicPlayer = document.getElementsByTagName("video")[0];
     {
         const audioDeviceID = localStorage.getItem("dokm-audio-device-favoriteDevice");
@@ -84,10 +98,6 @@
         if (!currentDevice) {
             currentDevice = defaultAudioDevice;
         }
-
-      if(!speakerDeviceID){
-        defaultSpeaker = currentDevice;
-      }
 
     }
     createMenu()
@@ -149,13 +159,13 @@
 
         // sort the devices, default device first, default speaker second and the rest in alphabetical order
         let sorted = audioDevices.sort((a, b) => {
-            if (a.deviceId === defaultAudioDevice.deviceId) {
+            if (a.deviceId === defaultAudioDevice?.deviceId) {
                 return -1;
-            } else if (b.deviceId === defaultAudioDevice.deviceId) {
+            } else if (b.deviceId === defaultAudioDevice?.deviceId) {
                 return 1;
-            } else if (a.deviceId === defaultSpeaker.deviceId) {
+            } else if (a.deviceId === defaultSpeaker?.deviceId) {
                 return -1;
-            } else if (b.deviceId === defaultSpeaker.deviceId) {
+            } else if (b.deviceId === defaultSpeaker?.deviceId) {
                 return 1;
             } else if (a.label < b.label) {
                 return -1;
@@ -265,10 +275,10 @@
     }
 
     function createMenu() {
-        const menuLocation = document.getElementById("right-content");
+        const menuLocation = document.getElementById(menuID);
 
         if (!menuLocation) {
-            console.error("Element with ID 'right-content' not found.");
+            console.error(`Element with ID '${menuID}' not found.`);
             return;
         }
 
